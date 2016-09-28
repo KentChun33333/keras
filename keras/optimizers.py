@@ -142,7 +142,7 @@ class SGD(Optimizer):
         self.updates = [K.update_add(self.iterations, 1)]
 
         # momentum
-        shapes = [x.shape for x in K.batch_get_value(params)]
+        shapes = [K.get_variable_shape(p) for p in params]
         moments = [K.zeros(shape) for shape in shapes]
         self.weights = [self.iterations] + moments
         for p, g, m in zip(params, grads, moments):
@@ -194,7 +194,7 @@ class RMSprop(Optimizer):
 
     def get_updates(self, params, constraints, loss):
         grads = self.get_gradients(loss, params)
-        shapes = [x.shape for x in K.batch_get_value(params)]
+        shapes = [K.get_variable_shape(p) for p in params]
         accumulators = [K.zeros(shape) for shape in shapes]
         self.weights = accumulators
         self.updates = []
@@ -229,6 +229,9 @@ class Adagrad(Optimizer):
     # Arguments
         lr: float >= 0. Learning rate.
         epsilon: float >= 0.
+
+    # References
+        - [Adaptive Subgradient Methods for Online Learning and Stochastic Optimization](http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
     '''
     def __init__(self, lr=0.01, epsilon=1e-8, **kwargs):
         super(Adagrad, self).__init__(**kwargs)
@@ -237,7 +240,7 @@ class Adagrad(Optimizer):
 
     def get_updates(self, params, constraints, loss):
         grads = self.get_gradients(loss, params)
-        shapes = [x.shape for x in K.batch_get_value(params)]
+        shapes = [K.get_variable_shape(p) for p in params]
         accumulators = [K.zeros(shape) for shape in shapes]
         self.weights = accumulators
         self.updates = []
@@ -282,7 +285,7 @@ class Adadelta(Optimizer):
 
     def get_updates(self, params, constraints, loss):
         grads = self.get_gradients(loss, params)
-        shapes = [x.shape for x in K.batch_get_value(params)]
+        shapes = [K.get_variable_shape(p) for p in params]
         accumulators = [K.zeros(shape) for shape in shapes]
         delta_accumulators = [K.zeros(shape) for shape in shapes]
         self.weights = accumulators + delta_accumulators
@@ -345,7 +348,7 @@ class Adam(Optimizer):
         t = self.iterations + 1
         lr_t = self.lr * K.sqrt(1. - K.pow(self.beta_2, t)) / (1. - K.pow(self.beta_1, t))
 
-        shapes = [x.shape for x in K.batch_get_value(params)]
+        shapes = [K.get_variable_shape(p) for p in params]
         ms = [K.zeros(shape) for shape in shapes]
         vs = [K.zeros(shape) for shape in shapes]
         self.weights = [self.iterations] + ms + vs
@@ -405,7 +408,7 @@ class Adamax(Optimizer):
         t = self.iterations + 1
         lr_t = self.lr / (1. - K.pow(self.beta_1, t))
 
-        shapes = [x.shape for x in K.batch_get_value(params)]
+        shapes = [K.get_variable_shape(p) for p in params]
         # zero init of 1st moment
         ms = [K.zeros(shape) for shape in shapes]
         # zero init of exponentially weighted infinity norm
@@ -453,9 +456,8 @@ class Nadam(Optimizer):
         epsilon: float >= 0. Fuzz factor.
 
     # References
-        [1] Nadam report - http://cs229.stanford.edu/proj2015/054_report.pdf
-        [2] On the importance of initialization and momentum in deep learning -
-            http://www.cs.toronto.edu/~fritz/absps/momentum.pdf
+        - [Nadam report](http://cs229.stanford.edu/proj2015/054_report.pdf)
+        - [On the importance of initialization and momentum in deep learning](http://www.cs.toronto.edu/~fritz/absps/momentum.pdf)
     '''
     def __init__(self, lr=0.002, beta_1=0.9, beta_2=0.999,
                  epsilon=1e-8, schedule_decay=0.004, **kwargs):
@@ -481,7 +483,7 @@ class Nadam(Optimizer):
         m_schedule_next = self.m_schedule * momentum_cache_t * momentum_cache_t_1
         self.updates.append((self.m_schedule, m_schedule_new))
 
-        shapes = [x.shape for x in K.batch_get_value(params)]
+        shapes = [K.get_variable_shape(p) for p in params]
         ms = [K.zeros(shape) for shape in shapes]
         vs = [K.zeros(shape) for shape in shapes]
 

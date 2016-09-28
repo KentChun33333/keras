@@ -12,6 +12,8 @@ from .common import cast_to_floatx
 from .common import image_dim_ordering
 from .common import set_image_dim_ordering
 from .common import is_keras_tensor
+from .common import legacy_weight_ordering
+from .common import set_legacy_weight_ordering
 
 _keras_base_dir = os.path.expanduser('~')
 if not os.access(_keras_base_dir, os.W_OK):
@@ -40,12 +42,13 @@ if os.path.exists(_config_path):
     _BACKEND = _backend
 
 # save config file
-_config = {'floatx': floatx(),
-           'epsilon': epsilon(),
-           'backend': _BACKEND,
-           'image_dim_ordering': image_dim_ordering()}
-with open(_config_path, 'w') as f:
-    f.write(json.dumps(_config, indent=4))
+if not os.path.exists(_config_path):
+    _config = {'floatx': floatx(),
+               'epsilon': epsilon(),
+               'backend': _BACKEND,
+               'image_dim_ordering': image_dim_ordering()}
+    with open(_config_path, 'w') as f:
+        f.write(json.dumps(_config, indent=4))
 
 if 'KERAS_BACKEND' in os.environ:
     _backend = os.environ['KERAS_BACKEND']
